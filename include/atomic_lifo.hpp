@@ -24,6 +24,15 @@ public:
             cv.notify_one();
     }
 
+    template <typename... Args>
+    void emplace(Args&&... args) {
+	std::lock_guard<std::mutex> lock { mutex };
+	bool was_empty = stuff.empty();
+	stuff.emplace_front(std::forward<Args...>(args)...);
+	if (was_empty)
+		cv.notify_one();
+    }
+
     value_type pop()
     {
         std::unique_lock<std::mutex> lock { mutex };
@@ -42,3 +51,4 @@ public:
         return stuff.empty();
     }
 };
+
