@@ -26,11 +26,11 @@ public:
 
     template <typename... Args>
     void emplace(Args&&... args) {
-	std::lock_guard<std::mutex> lock { mutex };
-	bool was_empty = stuff.empty();
-	stuff.emplace_front(std::forward<Args...>(args)...);
-	if (was_empty)
-		cv.notify_one();
+        std::lock_guard<std::mutex> lock { mutex };
+        bool was_empty = stuff.empty();
+        stuff.emplace_front(std::forward<Args...>(args)...);
+        if (was_empty)
+            cv.notify_one();
     }
 
     value_type pop()
@@ -41,7 +41,6 @@ public:
 
         value_type v { std::move(stuff.front()) };
         stuff.erase_after(stuff.before_begin());
-        lock.unlock();
         return v;
     }
 
