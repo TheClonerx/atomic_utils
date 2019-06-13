@@ -6,7 +6,10 @@ template <typename T>
 class atomic_lifo {
 public:
     using value_type = T;
-    static_assert(std::is_nothrow_move_constructible<value_type>::value, "sorry, only sane types are supported");
+    static_assert(
+        std::is_nothrow_move_constructible<value_type>::value || std::is_nothrow_copy_constructible<value_type>,
+         "sorry, only sane types are supported"
+    );
 
 private:
     std::forward_list<value_type> stuff;
@@ -39,7 +42,7 @@ public:
         if (stuff.empty())
             cv.wait(lock, [this]() { return !stuff.empty(); });
 
-        value_type v { std::move(stuff.front()) };
+        value_type v { std::move_if_noexcept(stuff.front()) };
         stuff.erase_after(stuff.before_begin());
         return v;
     }
